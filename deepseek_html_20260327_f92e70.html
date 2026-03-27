@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Мессенджер | Мобильная и десктопная версия</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+            background: #0b141a;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 1000px;
+            height: 95vh;
+            background: #f0f2f5;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: #fff;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e9edef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #2e7d64;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-name {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .icon-btn, .logout-btn {
+            background: #eef2f5;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 28px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 36px;
+        }
+
+        .icon-btn:active, .logout-btn:active {
+            transform: scale(0.96);
+        }
+
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #eef2f5;
+        }
+
+        .chat-header {
+            background: #fff;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e9edef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .chat-contact-select {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .chat-contact-select label {
+            font-weight: 500;
+            color: #2e7d64;
+            font-size: 0.9rem;
+        }
+
+        select {
+            padding: 8px 12px;
+            border-radius: 30px;
+            border: 1px solid #ddd;
+            background: #f9f9f9;
+            font-size: 16px; /* чтобы не масштабировалось на iOS */
+            cursor: pointer;
+            outline: none;
+            min-width: 140px;
+        }
+
+        .call-btn {
+            background: #2e7d64;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            min-height: 40px;
+        }
+
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .message {
+            display: flex;
+            max-width: 85%;
+        }
+
+        .message.own {
+            align-self: flex-end;
+            justify-content: flex-end;
+        }
+
+        .message.other {
+            align-self: flex-start;
+        }
+
+        .bubble {
+            background: white;
+            padding: 8px 14px;
+            border-radius: 20px;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+            word-break: break-word;
+        }
+
+        .message.own .bubble {
+            background: #d9f0ec;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.other .bubble {
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-text {
+            font-size: 15px;
+            line-height: 1.4;
+        }
+
+        .message-time {
+            font-size: 10px;
+            color: #7e8c8f;
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        .input-panel {
+            background: #fff;
+            padding: 10px 16px;
+            display: flex;
+            gap: 10px;
+            border-top: 1px solid #e9edef;
+        }
+
+        .input-panel input {
+            flex: 1;
+            border: none;
+            background: #f0f2f5;
+            padding: 12px 18px;
+            border-radius: 28px;
+            outline: none;
+            font-size: 16px; /* предотвращает масштабирование на iOS */
+        }
+
+        .input-panel button {
+            background: #2e7d64;
+            border: none;
+            color: white;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Модальные окна */
+        .modal, .call-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content, .call-window {
+            background: white;
+            border-radius: 28px;
+            padding: 24px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 28px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+        }
+
+        .modal-content button, .call-actions button {
+            margin: 5px;
+            padding: 10px 20px;
+            border-radius: 28px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: #2e7d64;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #eef2f5;
+        }
+
+        .call-window {
+            background: #1e2a32;
+            color: white;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .call-video {
+            background: #000;
+            padding: 20px;
+            text-align: center;
+        }
+
+        video {
+            width: 100%;
+            max-height: 300px;
+            background: #222;
+            border-radius: 16px;
+        }
+
+        .call-actions {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .call-btn-end {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .call-btn-answer {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .auth-card {
+            background: white;
+            padding: 32px;
+            border-radius: 32px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .auth-card input {
+            width: 100%;
+            padding: 12px;
+            margin: 12px 0;
+            border: 1px solid #ddd;
+            border-radius: 28px;
+            font-size: 16px;
+        }
+
+        .auth-card button {
+            background: #2e7d64;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+
+        .auth-toggle {
+            margin-top: 20px;
+            color: #2e7d64;
+            cursor: pointer;
+        }
+
+        /* Адаптация под маленькие экраны */
+        @media (max-width: 600px) {
+            body {
+                padding: 0;
+            }
+            .app {
+                height: 100vh;
+                border-radius: 0;
+            }
+            .header {
+                padding: 10px 12px;
+            }
+            .icon-btn, .logout-btn {
+                padding: 6px 10px;
+                font-size: 0.75rem;
+            }
+            .chat-header {
+                padding: 10px 12px;
+            }
+            select {
+                font-size: 14px;
+                padding: 6px 10px;
+                min-width: 120px;
+            }
+            .call-btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+            .message {
+                max-width: 90%;
+            }
+            .bubble {
+                padding: 6px 12px;
+            }
+            .message-text {
+                font-size: 14px;
+            }
+            .input-panel input {
+                padding: 10px 14px;
+                font-size: 15px;
+            }
+            .input-panel button {
+                width: 44px;
+                height: 44px;
+            }
+            .modal-content, .call-window {
+                width: 95%;
+                padding: 20px;
+            }
+        }
+
+        /* Для очень узких экранов */
+        @media (max-width: 480px) {
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .user-info {
+                margin-left: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app" id="app" style="display: none;">
+    <div class="header">
+        <div class="logo">📱 ConnectMe</div>
+        <div class="header-actions">
+            <button class="icon-btn" id="addContactBtn">➕ Друг</button>
+            <button class="icon-btn" id="exportDbBtn">💾 Экспорт</button>
+            <button class="icon-btn" id="importDbBtn">📂 Импорт</button>
+            <button class="icon-btn" id="openInBrowserBtn">🌐 Открыть</button>
+            <div class="user-info">
+                <span class="user-name" id="currentUserName"></span>
+                <button class="logout-btn" id="logoutBtn">Выйти</button>
+            </div>
+        </div>
+    </div>
+    <div class="chat-area">
+        <div class="chat-header">
+            <div class="chat-contact-select">
+                <label>Собеседник:</label>
+                <select id="contactSelect">
+                    <option value="">-- выберите друга --</option>
+                </select>
+            </div>
+            <button class="call-btn" id="callBtn" disabled>📞 Позвонить</button>
+        </div>
+        <div class="messages-area" id="messagesArea">
+            <div style="text-align:center; color:#7e8c8f; margin-top:40px;">👈 Выберите друга</div>
+        </div>
+        <div class="input-panel">
+            <input type="text" id="messageInput" placeholder="Сообщение..." autocomplete="off" disabled>
+            <button id="sendBtn" disabled>➤</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- Структура данных ----------
+    let users = JSON.parse(localStorage.getItem('users')) || [];
+    let currentUser = null;
+    let activeContactId = null;
+    let callModal = null;
+    let localStream = null;
+
+    // Инициализация тестовых пользователей
+    if (users.length === 0) {
+        users.push({ id: 1, username: 'Алиса', password: '123', contacts: [] });
+        users.push({ id: 2, username: 'Борис', password: '123', contacts: [] });
+        users.push({ id: 3, username: 'Вика', password: '123', contacts: [] });
+        users[0].contacts = [2, 3];
+        users[1].contacts = [1, 3];
+        users[2].contacts = [1, 2];
+        localStorage.setItem('users', JSON.stringify(users));
+    }
+
+    function getUserById(id) {
+        return users.find(u => u.id === id);
+    }
+
+    function getContactsOfUser(user) {
+        return user.contacts || [];
+    }
+
+    function addContact(userId, contactId) {
+        const user = getUserById(userId);
+        if (user && !user.contacts.includes(contactId)) {
+            user.contacts.push(contactId);
+            localStorage.setItem('users', JSON.stringify(users));
+            return true;
+        }
+        return false;
+    }
+
+    // Сообщения
+    function getMessagesKey(userId1, userId2) {
+        let a = Math.min(userId1, userId2);
+        let b = Math.max(userId1, userId2);
+        return `messages_${a}_${b}`;
+    }
+
+    function loadMessages(userA, userB) {
+        const key = getMessagesKey(userA.id, userB.id);
+        return JSON.parse(localStorage.getItem(key)) || [];
+    }
+
+    function saveMessages(userA, userB, messages) {
+        const key = getMessagesKey(userA.id, userB.id);
+        localStorage.setItem(key, JSON.stringify(messages));
+    }
+
+    function addMessageToStorage(fromId, toId, text, time) {
+        const fromUser = getUserById(fromId);
+        const toUser = getUserById(toId);
+        if (!fromUser || !toUser) return;
+        const messages = loadMessages(fromUser, toUser);
+        messages.push({
+            from: fromId,
+            to: toId,
+            text: text,
+            time: time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        });
+        saveMessages(fromUser, toUser, messages);
+    }
+
+    function renderMessages() {
+        const container = document.getElementById('messagesArea');
+        if (!activeContactId || !currentUser) {
+            container.innerHTML = '<div style="text-align:center; color:#7e8c8f; margin-top:40px;">👈 Выберите друга</div>';
+            return;
+        }
+        const contactUser = getUserById(activeContactId);
+        if (!contactUser) return;
+        const messages = loadMessages(currentUser, contactUser);
+        if (messages.length === 0) {
+            container.innerHTML = '<div style="text-align:center; color:#7e8c8f; margin-top:40px;">💬 Напишите первое сообщение</div>';
+            return;
+        }
+        let html = '';
+        messages.forEach(msg => {
+            const isOwn = msg.from === currentUser.id;
+            html += `
+                <div class="message ${isOwn ? 'own' : 'other'}">
+                    <div class="bubble">
+                        <div class="message-text">${escapeHtml(msg.text)}</div>
+                        <div class="message-time">${escapeHtml(msg.time)}</div>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function sendMessage() {
+        if (!activeContactId || !currentUser) return;
+        const input = document.getElementById('messageInput');
+        const text = input.value.trim();
+        if (!text) return;
+        const contactUser = getUserById(activeContactId);
+        if (!contactUser) return;
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        addMessageToStorage(currentUser.id, contactUser.id, text, time);
+        renderMessages();
+        input.value = '';
+        input.focus();
+    }
+
+    function populateContactSelect() {
+        const select = document.getElementById('contactSelect');
+        if (!currentUser) return;
+        const contactIds = getContactsOfUser(currentUser);
+        const contactUsers = contactIds.map(id => getUserById(id)).filter(u => u);
+        select.innerHTML = '<option value="">-- выберите друга --</option>';
+        contactUsers.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user.id;
+            option.textContent = user.username;
+            if (activeContactId === user.id) option.selected = true;
+            select.appendChild(option);
+        });
+        if (activeContactId && !contactIds.includes(activeContactId)) {
+            activeContactId = null;
+        }
+        const isActive = activeContactId !== null;
+        document.getElementById('messageInput').disabled = !isActive;
+        document.getElementById('sendBtn').disabled = !isActive;
+        document.getElementById('callBtn').disabled = !isActive;
+        if (!isActive) {
+            document.getElementById('messagesArea').innerHTML = '<div style="text-align:center; color:#7e8c8f; margin-top:40px;">👈 Выберите друга</div>';
+        } else {
+            renderMessages();
+        }
+    }
+
+    function onContactSelectChange() {
+        const select = document.getElementById('contactSelect');
+        const value = select.value;
+        if (value === "") {
+            activeContactId = null;
+        } else {
+            activeContactId = parseInt(value);
+        }
+        populateContactSelect();
+    }
+
+    function showAddContactModal() {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h3>Добавить друга</h3>
+                <input type="text" id="contactUsername" placeholder="Имя пользователя" autocomplete="off">
+                <div>
+                    <button id="confirmAddBtn" class="btn-primary">Добавить</button>
+                    <button id="cancelAddBtn" class="btn-secondary">Отмена</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        document.getElementById('confirmAddBtn').addEventListener('click', () => {
+            const username = document.getElementById('contactUsername').value.trim();
+            if (!username) {
+                alert('Введите имя пользователя');
+                return;
+            }
+            const targetUser = users.find(u => u.username === username && u.id !== currentUser.id);
+            if (!targetUser) {
+                alert('Пользователь не найден');
+                return;
+            }
+            if (currentUser.contacts.includes(targetUser.id)) {
+                alert('Этот пользователь уже в ваших контактах');
+                modal.remove();
+                return;
+            }
+            addContact(currentUser.id, targetUser.id);
+            populateContactSelect();
+            alert(`Пользователь ${targetUser.username} добавлен в друзья`);
+            modal.remove();
+        });
+        document.getElementById('cancelAddBtn').addEventListener('click', () => modal.remove());
+    }
+
+    // Экспорт/Импорт
+    function exportDatabase() {
+        const allMessages = {};
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith('messages_')) {
+                allMessages[key] = JSON.parse(localStorage.getItem(key));
+            }
+        }
+        const exportData = { users, messages: allMessages, version: 1 };
+        const jsonStr = JSON.stringify(exportData, null, 2);
+        const blob = new Blob([jsonStr], { type: 'text/plain' });
+        const a = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        a.href = url;
+        a.download = `messenger_db_${new Date().toISOString().slice(0,19)}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function importDatabase(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                if (!data.users || !data.messages) throw new Error('Неверный формат');
+                const keysToRemove = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key === 'users' || key.startsWith('messages_')) keysToRemove.push(key);
+                }
+                keysToRemove.forEach(key => localStorage.removeItem(key));
+                localStorage.setItem('users', JSON.stringify(data.users));
+                for (const [key, msgs] of Object.entries(data.messages)) {
+                    localStorage.setItem(key, JSON.stringify(msgs));
+                }
+                users = data.users;
+                const savedId = localStorage.getItem('currentUserId');
+                if (savedId) {
+                    const user = users.find(u => u.id == savedId);
+                    if (user) currentUser = user;
+                    else { currentUser = null; localStorage.removeItem('currentUserId'); }
+                } else currentUser = null;
+                if (currentUser) {
+                    document.getElementById('currentUserName').innerText = currentUser.username;
+                    activeContactId = null;
+                    populateContactSelect();
+                    document.getElementById('contactSelect').value = "";
+                    document.getElementById('messagesArea').innerHTML = '<div style="text-align:center; color:#7e8c8f; margin-top:40px;">👈 Выберите друга</div>';
+                } else {
+                    document.getElementById('app').style.display = 'none';
+                    showAuthScreen();
+                }
+                alert('База данных импортирована');
+            } catch (err) {
+                alert('Ошибка импорта: ' + err.message);
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    function openInBrowser() {
+        window.open(window.location.href, '_blank');
+    }
+
+    // Звонок
+    async function startCall() {
+        if (!activeContactId) return;
+        const contactUser = getUserById(activeContactId);
+        if (!contactUser) return;
+        if (callModal) closeCallModal();
+        callModal = document.createElement('div');
+        callModal.className = 'call-modal';
+        callModal.innerHTML = `
+            <div class="call-window">
+                <div class="call-video">
+                    <video id="localVideo" autoplay muted playsinline></video>
+                    <p style="margin-top:10px;">Звонок для ${escapeHtml(contactUser.username)} (демо)</p>
+                </div>
+                <div class="call-actions">
+                    <button class="call-btn-end" id="endCallBtn">Завершить</button>
+                    <button class="call-btn-answer" id="answerCallBtn">Ответить</button>
+                </div>
+                <div style="text-align:center; padding-bottom:20px;">
+                    <button class="close-call" id="closeCallBtn">Закрыть</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(callModal);
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            const videoEl = document.getElementById('localVideo');
+            if (videoEl) videoEl.srcObject = localStream;
+        } catch (err) {
+            const videoContainer = callModal.querySelector('.call-video');
+            if (videoContainer) videoContainer.innerHTML += '<p style="color:red;">⚠️ Нет доступа к камере/микрофону</p>';
+        }
+        document.getElementById('endCallBtn').addEventListener('click', () => closeCallModal());
+        document.getElementById('answerCallBtn').addEventListener('click', () => alert('Демо-звонок (требуется серверный сигналинг)'));
+        document.getElementById('closeCallBtn').addEventListener('click', () => closeCallModal());
+    }
+
+    function closeCallModal() {
+        if (localStream) {
+            localStream.getTracks().forEach(track => track.stop());
+            localStream = null;
+        }
+        if (callModal) callModal.remove();
+        callModal = null;
+    }
+
+    // Аутентификация
+    function showAuthScreen() {
+        const authDiv = document.createElement('div');
+        authDiv.className = 'auth-overlay';
+        authDiv.id = 'authOverlay';
+        authDiv.innerHTML = `
+            <div class="auth-card">
+                <h2>📱 ConnectMe</h2>
+                <div id="authForm">
+                    <input type="text" id="loginUsername" placeholder="Имя пользователя">
+                    <input type="password" id="loginPassword" placeholder="Пароль">
+                    <button id="loginBtn">Войти</button>
+                    <div class="auth-toggle" id="showRegister">Нет аккаунта? Зарегистрироваться</div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(authDiv);
+        document.getElementById('loginBtn').addEventListener('click', () => login());
+        document.getElementById('showRegister').addEventListener('click', () => showRegisterForm());
+    }
+
+    function showRegisterForm() {
+        const authCard = document.querySelector('.auth-card');
+        authCard.innerHTML = `
+            <h2>Регистрация</h2>
+            <div id="regForm">
+                <input type="text" id="regUsername" placeholder="Имя пользователя">
+                <input type="password" id="regPassword" placeholder="Пароль">
+                <button id="regBtn">Зарегистрироваться</button>
+                <div class="auth-toggle" id="showLogin">Уже есть аккаунт? Войти</div>
+            </div>
+        `;
+        document.getElementById('regBtn').addEventListener('click', () => register());
+        document.getElementById('showLogin').addEventListener('click', () => showAuthScreen());
+    }
+
+    function login() {
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value.trim();
+        const user = users.find(u => u.username === username && u.password === password);
+        if (user) {
+            currentUser = user;
+            localStorage.setItem('currentUserId', user.id);
+            document.getElementById('authOverlay').remove();
+            document.getElementById('app').style.display = 'flex';
+            document.getElementById('currentUserName').innerText = user.username;
+            activeContactId = null;
+            populateContactSelect();
+            document.getElementById('contactSelect').value = "";
+            document.getElementById('messagesArea').innerHTML = '<div style="text-align:center; color:#7e8c8f; margin-top:40px;">👈 Выберите друга</div>';
+        } else {
+            alert('Неверное имя или пароль');
+        }
+    }
+
+    function register() {
+        const username = document.getElementById('regUsername').value.trim();
+        const password = document.getElementById('regPassword').value.trim();
+        if (!username || !password) {
+            alert('Заполните все поля');
+            return;
+        }
+        if (users.find(u => u.username === username)) {
+            alert('Пользователь уже существует');
+            return;
+        }
+        const newId = users.length ? Math.max(...users.map(u => u.id)) + 1 : 4;
+        const newUser = { id: newId, username, password, contacts: [] };
+        users.push(newUser);
+        localStorage.setItem('users', JSON.stringify(users));
+        alert('Регистрация успешна! Войдите.');
+        showAuthScreen();
+    }
+
+    function logout() {
+        currentUser = null;
+        localStorage.removeItem('currentUserId');
+        if (localStream) closeCallModal();
+        document.getElementById('app').style.display = 'none';
+        showAuthScreen();
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function initSession() {
+        const savedId = localStorage.getItem('currentUserId');
+        if (savedId) {
+            const user = users.find(u => u.id == savedId);
+            if (user) {
+                currentUser = user;
+                document.getElementById('app').style.display = 'flex';
+                document.getElementById('currentUserName').innerText = user.username;
+                activeContactId = null;
+                populateContactSelect();
+                document.getElementById('contactSelect').value = "";
+                document.getElementById('messagesArea').innerHTML = '<div style="text-align:center; color:#7e8c8f; margin-top:40px;">👈 Выберите друга</div>';
+                return;
+            }
+        }
+        showAuthScreen();
+    }
+
+    // Обработчики
+    document.getElementById('sendBtn').addEventListener('click', sendMessage);
+    document.getElementById('messageInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+    document.getElementById('callBtn').addEventListener('click', startCall);
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+    document.getElementById('contactSelect').addEventListener('change', onContactSelectChange);
+    document.getElementById('addContactBtn').addEventListener('click', showAddContactModal);
+    document.getElementById('exportDbBtn').addEventListener('click', exportDatabase);
+    document.getElementById('importDbBtn').addEventListener('click', () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.txt';
+        input.onchange = (e) => { if (input.files.length) importDatabase(input.files[0]); };
+        input.click();
+    });
+    document.getElementById('openInBrowserBtn').addEventListener('click', openInBrowser);
+
+    initSession();
+</script>
+</body>
+</html>
